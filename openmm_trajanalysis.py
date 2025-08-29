@@ -57,25 +57,125 @@ def detect_interval_ps(u):
 def parse_group_info(filepath):
     """Parses group_information.txt into a dictionary like {'protein 1': ['A', 'C']}. """
     groups = {}
-    with open(filepath, 'r') as f:
-        for line in f:
-            if ':' in line and 'protein' in line.lower():
-                key, val = line.split(':', 1)
-                key = key.strip()
-                chains = [c.strip() for c in val.split(',')]
-                groups[key] = chains
+    try:
+        with open(filepath, 'r') as f:
+            line_num = 0
+            for line in f:
+                line_num += 1
+                line = line.strip()
+                
+                # Skip empty lines and comments
+                if not line or line.startswith('#'):
+                    continue
+                    
+                if ':' in line:
+                    try:
+                        key, val = line.split(':', 1)
+                        key = key.strip()
+                        
+                        if not key:
+                            print(f"Warning: Empty group name on line {line_num} in {filepath}")
+                            continue
+                            
+                        # Handle empty or whitespace-only values
+                        val = val.strip()
+                        if not val:
+                            print(f"Warning: Empty chain list for group '{key}' on line {line_num}")
+                            groups[key] = []
+                            continue
+                            
+                        # Parse chains and filter out empty ones
+                        chains = [c.strip() for c in val.split(',') if c.strip()]
+                        if not chains:
+                            print(f"Warning: No valid chains found for group '{key}' on line {line_num}")
+                            groups[key] = []
+                        else:
+                            groups[key] = chains
+                            
+                    except ValueError as e:
+                        print(f"Warning: Error parsing line {line_num} in {filepath}: {line}")
+                        print(f"  Error details: {e}")
+                        continue
+                else:
+                    # Line doesn't contain ':', might be malformed
+                    if line:  # Only warn for non-empty lines
+                        print(f"Warning: Skipping malformed line {line_num} in {filepath}: {line}")
+                        
+    except FileNotFoundError:
+        print(f"Error: Group information file not found: {filepath}")
+        return {}
+    except PermissionError:
+        print(f"Error: Permission denied reading file: {filepath}")
+        return {}
+    except UnicodeDecodeError:
+        print(f"Error: Unable to decode file (encoding issue): {filepath}")
+        return {}
+    except Exception as e:
+        print(f"Error: Unexpected error reading {filepath}: {e}")
+        return {}
+        
     return groups
 
 def parse_residue_info(filepath):
     """Parses <pdbid>_solvated.txt for chain-to-residue ranges into a dict like {'A': (1, 21)}. """
     chain_ranges = {}
-    with open(filepath, 'r') as f:
-        for line in f:
-            if line.strip().startswith('Chain'):
-                parts = line.strip().split()
-                chain_id = parts[1].replace(':', '')
-                start, end = map(int, parts[2].split('-'))
-                chain_ranges[chain_id] = (start, end)
+    try:
+        with open(filepath, 'r') as f:
+            line_num = 0
+            for line in f:
+                line_num += 1
+                line = line.strip()
+                
+                # Skip empty lines and comments
+                if not line or line.startswith('#'):
+                    continue
+                    
+                if line.startswith('Chain'):
+                    try:
+                        parts = line.split()
+                        if len(parts) < 3:
+                            print(f"Warning: Incomplete chain information on line {line_num} in {filepath}: {line}")
+                            continue
+                            
+                        chain_id = parts[1].replace(':', '')
+                        if not chain_id:
+                            print(f"Warning: Empty chain ID on line {line_num} in {filepath}")
+                            continue
+                            
+                        range_str = parts[2]
+                        if '-' not in range_str:
+                            print(f"Warning: Invalid range format on line {line_num} in {filepath}: {range_str}")
+                            continue
+                            
+                        try:
+                            start, end = map(int, range_str.split('-'))
+                            if start > end:
+                                print(f"Warning: Invalid range (start > end) on line {line_num} in {filepath}: {start}-{end}")
+                                continue
+                            chain_ranges[chain_id] = (start, end)
+                        except ValueError as e:
+                            print(f"Warning: Could not parse residue range on line {line_num} in {filepath}: {range_str}")
+                            print(f"  Error details: {e}")
+                            continue
+                            
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Error parsing chain line {line_num} in {filepath}: {line}")
+                        print(f"  Error details: {e}")
+                        continue
+                        
+    except FileNotFoundError:
+        print(f"Error: Residue information file not found: {filepath}")
+        return {}
+    except PermissionError:
+        print(f"Error: Permission denied reading file: {filepath}")
+        return {}
+    except UnicodeDecodeError:
+        print(f"Error: Unable to decode file (encoding issue): {filepath}")
+        return {}
+    except Exception as e:
+        print(f"Error: Unexpected error reading {filepath}: {e}")
+        return {}
+        
     return chain_ranges
 
 def parse_args():
@@ -194,6 +294,53 @@ def main():
         print("  → Found info files. Performing grouped RMSF analysis.")
         chain_groups = parse_group_info(group_info_path)
         chain_ranges = parse_residue_info(residue_info_path)
+        
+        # Check if parsing was successful
+        if not chain_groups:
+            print("  → Warning: No valid groups found in group information file. Falling back to default analysis.")
+            # Fall back to default non-grouped analysis
+            rmsf_output_path = os.path.join(outdir, "rmsf_data.txt")
+            np.savetxt(rmsf_output_path,
+                       np.column_stack((resids, rmsf_nm)),
+                       header="Residue_ID RMSF(nm)",
+                       fmt=["%d", "%.4f"])
+            print(f"  → Saved {rmsf_output_path}")
+            
+            plt.figure()
+            plt.plot(resids, rmsf_nm, "-o", markersize=3)
+            plt.xlabel("Residue")
+            plt.ylabel("RMSF (nm)")
+            plt.title("Backbone Cα RMSF per Residue")
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(os.path.join(outdir, "rmsf_per_residue.png"), dpi=300)
+            plt.close()
+            print(f"  → Saved {outdir}/rmsf_per_residue.png")
+            print(f"\nAll plots saved in: {outdir}")
+            return
+            
+        if not chain_ranges:
+            print("  → Warning: No valid chain ranges found in residue information file. Falling back to default analysis.")
+            # Fall back to default non-grouped analysis
+            rmsf_output_path = os.path.join(outdir, "rmsf_data.txt")
+            np.savetxt(rmsf_output_path,
+                       np.column_stack((resids, rmsf_nm)),
+                       header="Residue_ID RMSF(nm)",
+                       fmt=["%d", "%.4f"])
+            print(f"  → Saved {rmsf_output_path}")
+            
+            plt.figure()
+            plt.plot(resids, rmsf_nm, "-o", markersize=3)
+            plt.xlabel("Residue")
+            plt.ylabel("RMSF (nm)")
+            plt.title("Backbone Cα RMSF per Residue")
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(os.path.join(outdir, "rmsf_per_residue.png"), dpi=300)
+            plt.close()
+            print(f"  → Saved {outdir}/rmsf_per_residue.png")
+            print(f"\nAll plots saved in: {outdir}")
+            return
 
         plt.figure()
         

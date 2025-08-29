@@ -10,7 +10,7 @@ Compute and plot:
 
 This script will automatically perform a grouped RMSF analysis if it finds both:
   - <pdbid>/group_information.txt
-  - residual_number_information/<pdbid>_cleaned.txt
+  - residual_number_information/<pdbid>_solvated.txt
 If these files are found, it will generate a single plot with each group colored
 differently. By default, it saves all grouped data to a single text file.
 Use the --split-rmsf flag to save a separate data file for each group instead.
@@ -67,7 +67,7 @@ def parse_group_info(filepath):
     return groups
 
 def parse_residue_info(filepath):
-    """Parses <pdbid>_cleaned.txt for chain-to-residue ranges into a dict like {'A': (1, 21)}. """
+    """Parses <pdbid>_solvated.txt for chain-to-residue ranges into a dict like {'A': (1, 21)}. """
     chain_ranges = {}
     with open(filepath, 'r') as f:
         for line in f:
@@ -187,7 +187,7 @@ def main():
 
     # --- UPDATED RMSF ANALYSIS LOGIC ---
     group_info_path = os.path.join(pdbid, "group_information.txt")
-    residue_info_path = os.path.join("residual_number_information", f"{pdbid}_cleaned.txt")
+    residue_info_path = os.path.join("residual_number_information", f"{pdbid}_solvated.txt")
     
     # If both info files are found, run a grouped analysis
     if os.path.isfile(group_info_path) and os.path.isfile(residue_info_path):

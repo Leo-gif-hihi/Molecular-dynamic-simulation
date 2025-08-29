@@ -154,7 +154,7 @@ def main():
     info_dir = "residual_number_information"
     os.makedirs(info_dir, exist_ok=True)
     
-    summary_file_path = os.path.join(info_dir, f"{base_name}.txt")
+    summary_file_path = os.path.join(info_dir, f"{folder_name}_{base_name}.txt")
 
     with open(summary_file_path, 'w') as f_summary:
         f_summary.write(f"Summary for {pdb_file_name}:\n")

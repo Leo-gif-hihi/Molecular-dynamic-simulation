@@ -1,3 +1,2 @@
-Folder: Insulin
-protein 1: A,C
-protein 2: B,D
+insulin: A,C
+alpha-glucosidase: B,D

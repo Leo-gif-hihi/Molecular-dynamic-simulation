@@ -2,8 +2,9 @@
 
 # Automated Molecular Dynamics Simulation Workflow for Protein Structures
 
-This repository provides a streamlined workflow for running Molecular Dynamics (MD) simulations on protein structures using Google Colab. The process is automated through a series of Python scripts orchestrated by a Jupyter Notebook, leveraging powerful tools like OpenMM, PDBFixer, and MDAnalysis to prepare, simulate, and analyze protein PDB files. You can view the notebook [here](https://colab.research.google.com/drive/16bE2P0ZposBOdU2zq9gWJJYCyOoFIEDn?usp=sharing).🚀
-
+This repository provides a streamlined workflow for running Molecular Dynamics (MD) simulations on protein structures using Google Colab. The process is automated through a series of Python scripts orchestrated by a Jupyter Notebook, leveraging powerful tools like OpenMM, PDBFixer, and MDAnalysis to prepare, simulate, and analyze protein PDB files. 🚀
+## 📓 Colab Notebook 
+You can view the **notebook** [here](https://colab.research.google.com/drive/16bE2P0ZposBOdU2zq9gWJJYCyOoFIEDn?usp=sharing).
 ## ✨ Features
 
   * **Automated Pipeline**: From PDB cleaning to final analysis, the entire workflow is handled by running a single notebook.

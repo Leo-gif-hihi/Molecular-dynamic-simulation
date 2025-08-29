@@ -2,9 +2,7 @@
 
 # Automated Molecular Dynamics Simulation Workflow for Protein Structures
 
-[](https://www.google.com/search?q=https://colab.research.google.com/github/Leo-gif-hihi/Molecular-dynamic-simulation/blob/master/md_simulation.ipynb)
-
-This repository provides a streamlined workflow for running Molecular Dynamics (MD) simulations on protein structures using Google Colab. The process is automated through a series of Python scripts orchestrated by a Jupyter Notebook, leveraging powerful tools like OpenMM, PDBFixer, and MDAnalysis to prepare, simulate, and analyze protein PDB files. 🚀
+This repository provides a streamlined workflow for running Molecular Dynamics (MD) simulations on protein structures using Google Colab. The process is automated through a series of Python scripts orchestrated by a Jupyter Notebook, leveraging powerful tools like OpenMM, PDBFixer, and MDAnalysis to prepare, simulate, and analyze protein PDB files. You can view the notebook [here](https://colab.research.google.com/drive/16bE2P0ZposBOdU2zq9gWJJYCyOoFIEDn?usp=sharing).🚀
 
 ## ✨ Features
 
@@ -93,7 +91,7 @@ This example will create two groups for RMSF analysis: one with chains A and C, 
     workdir = '/content/drive/MyDrive/your_main_folder'
     ```
 5.  **Run the Simulation**: Execute the final large code cell. The script will automatically find your protein subfolders and process them one by one. It can be safely re-run to resume processing if the runtime is disconnected.
-You can view the notebook [here](https://colab.research.google.com/drive/16bE2P0ZposBOdU2zq9gWJJYCyOoFIEDn?usp=sharing).
+
 -----
 
 ## 📊 Output
